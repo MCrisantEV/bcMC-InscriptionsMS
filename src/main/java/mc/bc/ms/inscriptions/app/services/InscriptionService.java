@@ -13,5 +13,7 @@ public interface InscriptionService {
 	public Flux<Inscription> findAllInscription();
 	
 	public Mono<Inscription> findIdInscription(String id);
+	
+	public Mono<Map<String, Object>> updateInscription(String id, Inscription inscription);
 
 }
