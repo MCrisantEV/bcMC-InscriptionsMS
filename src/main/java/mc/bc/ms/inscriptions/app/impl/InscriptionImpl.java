@@ -58,7 +58,7 @@ public class InscriptionImpl implements InscriptionService {
 				Map<String, Object> params = new HashMap<String, Object>();
 				params.put("id", inscp.getCourse());
 				
-				return insRep.findById(inscp.getCourse()).map(db -> {
+				return insRep.findByCourse(inscp.getCourse()).map(db -> {
 					respuesta.put("Error", "El curso ya tiene una inscrpción");
 					return respuesta;
 				})
@@ -69,7 +69,7 @@ public class InscriptionImpl implements InscriptionService {
 					.map(c -> {
 						if(c.getState().equals("Open")) {
 							insRep.save(inscp).subscribe();
-							respuesta.put("Mensaje", "Curso "+ c.getName() +" abrió el proceso de inscripciones con éxito");
+							respuesta.put("Mensaje", "Curso "+ c.getName() +", abrió el proceso de inscripciones con éxito");
 						}else {
 							respuesta.put("Error", "No se puede abrir las inscripciones");
 							respuesta.put("Mensaje", "Curso "+c.getName()+" tiene el state '"+c.getState()+"'");
