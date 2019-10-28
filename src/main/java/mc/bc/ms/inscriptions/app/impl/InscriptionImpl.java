@@ -84,4 +84,14 @@ public class InscriptionImpl implements InscriptionService {
 			}
 		});
 	}
+
+	@Override
+	public Flux<Inscription> findAllInscription() {
+		return insRep.findAll();
+	}
+
+	@Override
+	public Mono<Inscription> findIdInscription(String id) {
+		return insRep.findById(id);
+	}
 }
