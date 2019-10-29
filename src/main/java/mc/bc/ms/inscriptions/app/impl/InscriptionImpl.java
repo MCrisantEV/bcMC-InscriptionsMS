@@ -2,7 +2,9 @@ package mc.bc.ms.inscriptions.app.impl;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import mc.bc.ms.inscriptions.app.models.Course;
 import mc.bc.ms.inscriptions.app.models.Inscription;
+import mc.bc.ms.inscriptions.app.models.ListInscription;
 import mc.bc.ms.inscriptions.app.repositories.InscriptionRepository;
 import mc.bc.ms.inscriptions.app.services.InscriptionService;
 import reactor.core.publisher.Flux;
@@ -56,9 +59,9 @@ public class InscriptionImpl implements InscriptionService {
 			} else {
 //				validate course data
 				Map<String, Object> params = new HashMap<String, Object>();
-				params.put("id", inscp.getCourse());
+				params.put("id", inscp.getId());
 				
-				return insRep.findByCourse(inscp.getCourse()).map(db -> {
+				return insRep.findById(inscp.getId()).map(db -> {
 					respuesta.put("Error", "El curso ya tiene una inscrpción");
 					return respuesta;
 				})
@@ -118,53 +121,62 @@ public class InscriptionImpl implements InscriptionService {
 				});
 			} else {
 				Map<String, Object> params = new HashMap<String, Object>();
-				params.put("id", inscp.getCourse());
+				params.put("id", id);
 				
-				client.get().uri("/{id}", params)
-				.accept(APPLICATION_JSON_UTF8)
-				.retrieve().bodyToMono(Course.class)
-				.map(c -> {
-					System.out.println("Min: "+c.getMin());
-					System.out.println("Max: "+c.getMax());
-					System.out.println("Student LIST: "+ inscp.getStudents());
-					System.out.println("Student LIST size: "+ inscp.getStudents().size());
-					System.out.println("Student LIST person: "+ inscp.getStudents().get(1).getPerson());
-					return c;
-				}).subscribe();
-				
-				
-//				inscp.setId(id);
-//				insRep.save(inscp).subscribe();
-				
-				
-				return Mono.just(respuesta);
-//				validate course data
-//				Map<String, Object> params = new HashMap<String, Object>();
-//				params.put("id", inscp.getCourse());
-//				
-//				return insRep.findByCourse(inscp.getCourse()).map(db -> {
-//					respuesta.put("Error", "El curso ya tiene una inscrpción");
-//					return respuesta;
-//				})
-//				.switchIfEmpty(
-//					client.get().uri("/{id}", params)
-//					.accept(APPLICATION_JSON_UTF8)
-//					.retrieve().bodyToMono(Course.class)
-//					.map(c -> {
-//						if(c.getState().equals("Open")) {
-//							insRep.save(inscp).subscribe();
-//							respuesta.put("Mensaje", "Curso "+ c.getName() +", abrió el proceso de inscripciones con éxito");
-//						}else {
-//							respuesta.put("Error", "No se puede abrir las inscripciones");
-//							respuesta.put("Mensaje", "Curso "+c.getName()+" tiene el state '"+c.getState()+"'");
-//						}
-//						return respuesta;
-//					}).switchIfEmpty(
-//						Mono.just(inscp).map(er -> {
-//							respuesta.put("Error", "El curso no existe");
-//							return respuesta;
-//						})
-//					));
+				return insRep.findById(id).flatMap(db -> {
+					return client.get().uri("/{id}", params)
+							.accept(APPLICATION_JSON_UTF8)
+							.retrieve().bodyToMono(Course.class).map(c -> {
+								if(inscp.getStudents().size() < c.getMin()) {
+									inscp.setFamilyMembers(db.getFamilyMembers());
+									insRep.save(inscp).subscribe();
+									respuesta.put("Mensaje", "Se agrego con éxito "+inscp.getStudents().size()+" estudiantes.");
+									respuesta.put("Warning", "Solo se pueden registrar estudiantes porque no cumplen el mínimo del cupo.");
+								}else {
+									int total = inscp.getStudents().size() + inscp.getFamilyMembers().size();
+									if(total <= c.getMax()) {
+										insRep.save(inscp).subscribe();
+										respuesta.put("Success", "Se agrego con éxito.");
+										respuesta.put("Mensaje", inscp.getStudents().size()+" Estudiantes - "+inscp.getFamilyMembers().size()+" Familiares.");
+									}else {
+										if(inscp.getStudents().size() <= c.getMax()) {
+											Mono.just(inscp).doOnNext(m -> {
+												List<ListInscription> list = new ArrayList<>();
+												int dif = c.getMax() - inscp.getStudents().size();
+												for (int i = 0; i < dif; i++) {
+													ListInscription objins = new ListInscription();
+													objins.setPerson(inscp.getFamilyMembers().get(i).getPerson());
+													list.add(objins);
+												}
+												inscp.setFamilyMembers(list);
+											}).subscribe();
+											insRep.save(inscp).subscribe();
+										}else {
+											Mono.just(inscp).doOnNext(m -> {
+												List<ListInscription> list = new ArrayList<>();
+												int dif = c.getMax() - inscp.getStudents().size();
+												for (int i = 0; i < dif; i++) {
+													ListInscription objins = new ListInscription();
+													objins.setPerson(inscp.getStudents().get(i).getPerson());
+													list.add(objins);
+												}
+												inscp.setFamilyMembers(list);
+											}).subscribe();
+											inscp.setFamilyMembers(null);
+											insRep.save(inscp).subscribe();
+										}
+										respuesta.put("Success", "Se agrego con éxito.");
+										respuesta.put("Mensaje", inscp.getStudents().size()+" Estudiantes - "+inscp.getFamilyMembers().size()+" Familiares.");
+										respuesta.put("Warning", "Por falta de cupo no se registraron todos los familiares.");
+									}
+								}
+								return respuesta;
+							});
+				}).switchIfEmpty(
+					Mono.just(inscp).map(er -> {
+					respuesta.put("Error", "El curso no tiene ninguna inscripción");
+					return respuesta;
+				}));
 			}
 		});
 	}

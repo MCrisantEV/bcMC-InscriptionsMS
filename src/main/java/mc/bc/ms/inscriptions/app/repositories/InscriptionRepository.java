@@ -7,5 +7,4 @@ import reactor.core.publisher.Mono;
 
 public interface InscriptionRepository extends ReactiveMongoRepository<Inscription, String>{
 	
-	public Mono<Inscription> findByCourse(String course);
 }
