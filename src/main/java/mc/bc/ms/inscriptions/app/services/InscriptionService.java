@@ -15,5 +15,7 @@ public interface InscriptionService {
 	public Mono<Inscription> findIdInscription(String id);
 	
 	public Mono<Map<String, Object>> updateInscription(String id, Inscription inscription);
+	
+	public Mono<Map<String, Object>> deleteInscription(String id);
 
 }

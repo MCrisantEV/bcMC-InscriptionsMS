@@ -170,6 +170,12 @@ public class InscriptionImpl implements InscriptionService {
 										respuesta.put("Warning", "Por falta de cupo no se registraron todos los familiares.");
 									}
 								}
+								c.setState("Active");
+								client.put().uri("/{id}", params)
+								.contentType(APPLICATION_JSON_UTF8)
+								.syncBody(c)
+						     	.retrieve()
+						     	.bodyToMono(Void.class).subscribe();
 								return respuesta;
 							});
 				}).switchIfEmpty(
@@ -178,6 +184,21 @@ public class InscriptionImpl implements InscriptionService {
 					return respuesta;
 				}));
 			}
+		});
+	}
+
+	@Override
+	public Mono<Map<String, Object>> deleteInscription(String id) {
+		Map<String, Object> respuesta = new HashMap<String, Object>();
+
+		return insRep.findById(id).map(insrDb -> {
+			if(insrDb.getFamilyMembers() == null && insrDb.getStudents() == null) {
+				respuesta.put("Mensaje: ", "La inscripcion se eliminó con éxito");
+			}else {
+				respuesta.put("Status", HttpStatus.BAD_REQUEST.value());
+				respuesta.put("Error", "La inscripción no se pudo elimininar, contine studiantes o familiares registrados");
+			}
+			return respuesta;
 		});
 	}
 }

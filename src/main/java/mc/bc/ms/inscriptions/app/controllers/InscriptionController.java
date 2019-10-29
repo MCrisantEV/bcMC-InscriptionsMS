@@ -3,6 +3,7 @@ package mc.bc.ms.inscriptions.app.controllers;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,5 +44,9 @@ public class InscriptionController {
 		return insServ.updateInscription(id, inscription);
 	}
 	
+	@DeleteMapping("/{id}")
+	public Mono<Map<String, Object>> removeCourse(@PathVariable String id) {
+		return insServ.deleteInscription(id);
+	}
 
 }
