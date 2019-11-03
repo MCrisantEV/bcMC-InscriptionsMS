@@ -13,6 +13,9 @@ import lombok.Data;
 public class Inscription {
 	@NotBlank
 	private String id;
+	
+	@NotBlank
+	private String institute;
 
 	private List<ListInscription> students;
 

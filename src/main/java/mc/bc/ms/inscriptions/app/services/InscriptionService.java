@@ -17,5 +17,7 @@ public interface InscriptionService {
 	public Mono<Map<String, Object>> updateInscription(String id, Inscription inscription);
 	
 	public Mono<Map<String, Object>> deleteInscription(String id);
+	
+	public Flux<Inscription> findStudentPerson(String institute, String person);
 
 }

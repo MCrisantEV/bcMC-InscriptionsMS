@@ -48,5 +48,10 @@ public class InscriptionController {
 	public Mono<Map<String, Object>> removeCourse(@PathVariable String id) {
 		return insServ.deleteInscription(id);
 	}
+	
+	@GetMapping("/students/{id}/{institute}")
+	public Flux<Inscription> findStudents(@PathVariable String id, @PathVariable String institute){
+		return insServ.findStudentPerson(institute, id);
+	}
 
 }
