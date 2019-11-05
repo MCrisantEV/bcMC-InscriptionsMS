@@ -206,4 +206,9 @@ public class InscriptionImpl implements InscriptionService {
 	public Flux<Inscription> findStudentPerson(String institute, String person) {
 		return insRep.findByInstituteAndStudentsPersonIn(institute, person);
 	}
+
+	@Override
+	public Flux<Inscription> findMembersPerson(String institute, String person) {
+		return insRep.findByInstituteAndFamilyMembersPersonIn(institute, person);
+	}
 }

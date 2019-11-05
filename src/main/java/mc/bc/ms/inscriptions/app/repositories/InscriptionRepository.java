@@ -9,5 +9,7 @@ public interface InscriptionRepository extends ReactiveMongoRepository<Inscripti
 	
 	public Flux<Inscription> findByInstituteAndStudentsPersonIn(String institute, String person);
 	
+	public Flux<Inscription> findByInstituteAndFamilyMembersPersonIn(String institute, String person);
+	
 	
 }

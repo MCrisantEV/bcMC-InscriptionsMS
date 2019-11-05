@@ -53,5 +53,10 @@ public class InscriptionController {
 	public Flux<Inscription> findStudents(@PathVariable String id, @PathVariable String institute){
 		return insServ.findStudentPerson(institute, id);
 	}
+	
+	@GetMapping("/members/{id}/{institute}")
+	public Flux<Inscription> findFamilyMembers(@PathVariable String id, @PathVariable String institute){
+		return insServ.findMembersPerson(institute, id);
+	}
 
 }

@@ -8,6 +8,7 @@ El Microservicio Inscriptions, contiene varias APIs las cuales devuelven un arch
 - API findStudent
 - API updateInscriptions
 - API deleteInscriptions
+- API findFamilyMembers
 
 Configuraciones
 - Config Server
